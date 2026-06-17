@@ -1,0 +1,561 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burnside Cricket Club - Ultimate Squad Hub</title>
+    <style>
+        :root {
+            --primary: #0f2027;
+            --secondary: #203a43;
+            --accent: #2c5364;
+            --gold: #f39c12;
+            --light: #f8f9fa;
+            --winner: #d3f9d8;
+            --danger: #ffeaea;
+            --danger-text: #c92a2a;
+            --warning: #fff9db;
+            --warning-text: #e67e22;
+            --success: #ebfbee;
+            --success-text: #2b8a3e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 1px; }
+        header p { margin: 5px 0 0 0; color: #ccc; }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto 25px auto;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--gold);
+        }
+
+        .panel h2 { margin-top: 0; color: var(--primary); font-size: 1.3rem; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 15px; }
+
+        .timetable-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 10px;
+            border-bottom: 1px dashed #ddd;
+        }
+        .timetable-row:last-child { border-bottom: none; }
+        .match-badge { background: var(--secondary); color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+        .venue-text { font-size: 0.9rem; color: #555; font-weight: 500; }
+
+        .countdown-container {
+            background: #f1f3f5;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 10px;
+            border: 1px solid #dee2e6;
+        }
+        .countdown-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .countdown-timer {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #d6336c;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        /* Lineup Widget Styles */
+        .lineup-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+        .lineup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border-left: 4px solid var(--secondary);
+            font-size: 0.9rem;
+        }
+        .lineup-item.maybe {
+            border-left-color: var(--gold);
+            background: #fff9db;
+        }
+        .lineup-status {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .status-confirmed { background: var(--success); color: var(--success-text); }
+        .status-unconfirmed { background: #ffe3e3; color: #b71c1c; }
+
+        /* Form Controls */
+        input[type="text"], input[type="number"], select {
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-action {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-action:hover { background: var(--accent); }
+
+        /* Tables */
+        .dashboard-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.9rem; margin-top: 10px; }
+        .dashboard-table th, .dashboard-table td { padding: 8px; border: 1px solid #dee2e6; }
+        .dashboard-table th { background-color: var(--secondary); color: white; }
+        .category-row { background-color: #e9ecef; font-weight: bold; color: var(--primary); text-align: left; padding-left: 10px; }
+        .higher-stat { background-color: var(--winner); font-weight: bold; color: #2b8a3e; }
+
+        /* Roster Matrix */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; border-top: 5px solid var(--accent); position: relative; }
+        .player-name { font-size: 1.3rem; font-weight: bold; color: var(--primary); }
+        .player-role { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        
+        .btn-status-trigger {
+            background-color: #f1f3f5;
+            color: #495057;
+            border: 1px solid #ced4da;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .stat-group-title { font-size: 0.85rem; font-weight: bold; color: var(--accent); margin: 10px 0 5px 0; border-bottom: 1px solid #ddd; }
+        .stats-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; }
+        .stat-mini { background: #f1f3f5; padding: 5px; border-radius: 5px; }
+        .stat-mini val { display: block; font-size: 0.95rem; font-weight: bold; }
+        .stat-mini label { font-size: 0.65rem; color: #666; text-transform: uppercase; }
+        .notes-field { background: #fff9db; border-left: 3px solid #f59f00; font-size: 0.75rem; padding: 5px 8px; margin-top: 8px; border-radius: 0 4px 4px 0; font-style: italic; }
+
+        .portal-panel {
+            background: #eef2f5;
+            border: 2px dashed var(--accent);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Rating System Slider */
+        .rating-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Burnside Cricket Club</h1>
+        <p>Squad Hub, Schedule & Fan Interaction Dashboard</p>
+    </header>
+
+    <div class="dashboard-layout">
+        <div class="panel">
+            <h2>📅 Weekly Fixture Timetable</h2>
+            <div class="timetable-row">
+                <div>
+                    <span class="match-badge">WEEKLY GAME</span>
+                    <strong style="margin-left: 10px;">Every Friday</strong>
+                </div>
+                <div>Time: <strong style="color: var(--gold);">6:00 PM</strong></div>
+            </div>
+            <div class="timetable-row" style="background: #fdfdfd;">
+                <div class="venue-text">📍 Venue: <strong>Sir Richard Hadlee Sports Centre</strong></div>
+            </div>
+            <div class="countdown-container">
+                <div class="countdown-title">⏳ Time Remaining Until Next Match</div>
+                <div class="countdown-timer" id="match-countdown">Calculating...</div>
+            </div>
+
+            <h3 style="margin-top: 20px; color: var(--primary); font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 5px;">🏏 Friday's Starting Lineup</h3>
+            <ul class="lineup-list">
+                <li class="lineup-item maybe"><span><strong>Viyan Yohith Muralidaran</strong></span><span class="lineup-status status-unconfirmed">Might Come</span></li>
+                <li class="lineup-item"><span><strong>Aarikjeet Dhaliwal</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
+                <li class="lineup-item maybe"><span><strong>Ryan Sabu</strong></span><span class="lineup-status status-unconfirmed">Might Come</span></li>
+                <li class="lineup-item"><span><strong>Jensen Van Rensburg</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
+                <li class="lineup-item"><span><strong>Thinuka Kandage</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
+                <li class="lineup-item"><span><strong>Linuka Kandage</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
+            </ul>
+        </div>
+
+        <div class="panel">
+            <h2>📊 Performance Comparison Machine</h2>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <select id="player1-select" onchange="runComparison()" style="width:45%;"></select>
+                <strong style="align-self: center;">VS</strong>
+                <select id="player2-select" onchange="runComparison()" style="width:45%;"></select>
+            </div>
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th id="p1-header" style="width: 38%;">P1</th>
+                        <th style="width: 24%;">Metric</th>
+                        <th id="p2-header" style="width: 38%;">P2</th>
+                    </tr>
+                </thead>
+                <tbody id="compare-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dashboard-layout">
+        <div class="panel">
+            <h2>🔮 Fan Prediction Zone</h2>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div>
+                    <label style="display:block; font-weight:bold; margin-bottom:2px;">Fan Name:</label>
+                    <input type="text" id="fan-name" placeholder="Enter your name" style="width:93%;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex:1;">
+                        <label style="display:block; font-weight:bold; margin-bottom:2px;">Pick Player:</label>
+                        <select id="predict-player-select" style="width:100%;"></select>
+                    </div>
+                    <div style="flex:1;">
+                        <label style="display:block; font-weight:bold; margin-bottom:2px;">Predicted Wickets:</label>
+                        <input type="number" id="predict-wickets" min="0" max="10" value="0" style="width:85%;">
+                    </div>
+                </div>
+                <button class="btn-action" onclick="submitPrediction()" style="margin-top: 5px;">Submit Prediction</button>
+            </div>
+
+            <h3 style="margin-top:20px; font-size:1.1rem; color:var(--primary);">🏆 Leaderboard (Fan Points)</h3>
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Fan Name</th>
+                        <th>Target Player</th>
+                        <th>Predicted Wkts</th>
+                        <th>Total Points</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h2>⭐️ Post-Match Player Ratings</h2>
+            <p style="font-size: 0.8rem; color: #666; margin-top:-10px;">Submit community score card averages after Friday's showdown.</p>
+            <div id="ratings-container" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #eee; padding: 10px; border-radius: 5px;"></div>
+            <button class="btn-action" onclick="submitRatings()">Submit Team Ratings</button>
+        </div>
+    </div>
+
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div class="portal-panel" id="player-status-portal">
+            <h3 style="margin-top:0; color:var(--primary);">🔒 Player Status Portal: <span id="portal-active-player-name"></span></h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <label>Set your match readiness status:</label>
+                <select id="portal-status-select" style="padding: 5px; font-weight: bold;">
+                    <option value="Fit">🟢 Fit & Ready</option>
+                    <option value="Sick">🟣 Sick</option>
+                    <option value="Injured">🔴 Injured</option>
+                    <option value="Absent">🟡 Absent</option>
+                </select>
+                <input type="text" id="portal-notes-input" placeholder="Optional brief note" style="padding: 6px; width: 300px; border: 1px solid #ccc; border-radius: 4px;">
+                <button onclick="savePlayerStatus()" class="btn-action">Save Updates</button>
+                <button onclick="closePortal()" style="background: #e0e0e0; color: #333; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <h2 style="max-width: 1200px; margin: 0 auto 15px auto; color: var(--primary);">🏏 Burnside Roster Status</h2>
+    <div class="grid" id="player-grid"></div>
+
+    <script>
+        const players = [
+            { id: 1, name: "Viyan Yohith Muralidaran", role: "All-Rounder", matches: 42, pin: "234688", status: "Injured", notes: "Badly sprained ankle. Expected back next week.", bat_runs: 307, bat_avg: 23.62, bat_sr: 49.04, high_score: "34*", wickets: 50, b_avg: 11.32, b_econ: 5.17, best_bowl: "5/11", five_w: 3, rating: 8.5, ratingCount: 1 },
+            { id: 2, name: "Thinuka Kandage", role: "Batsman", matches: 38, pin: "1234", status: "Fit", notes: "", bat_runs: 542, bat_avg: 28.50, bat_sr: 102.1, high_score: "64", wickets: 2, b_avg: 45.00, b_econ: 7.20, best_bowl: "1/12", five_w: 0, rating: 7.8, ratingCount: 1 },
+            { id: 3, name: "Lewis Gibson", role: "Bowler", matches: 35, pin: "1234", status: "Absent", notes: "Absent due to unknown causes.", bat_runs: 98, bat_avg: 8.90, bat_sr: 65.2, high_score: "18", wickets: 44, b_avg: 14.20, b_econ: 5.40, best_bowl: "4/15", five_w: 0, rating: 7.0, ratingCount: 1 },
+            { id: 4, name: "Sam Bennets", role: "Wicket-Keeper/Batsman", matches: 40, pin: "1234", status: "Absent", notes: "Absent due to unknown causes.", bat_runs: 489, bat_avg: 21.25, bat_sr: 88.45, high_score: "48", wickets: 0, b_avg: 0, b_econ: 0, best_bowl: "0/0", five_w: 0, rating: 7.2, ratingCount: 1 },
+            { id: 5, name: "Sam Ansyely", role: "All-Rounder", matches: 30, pin: "1234", status: "Absent", notes: "Absent due to unknown causes.", bat_runs: 210, bat_avg: 15.00, bat_sr: 72.10, high_score: "29", wickets: 22, b_avg: 18.50, b_econ: 6.10, best_bowl: "3/20", five_w: 0, rating: 6.8, ratingCount: 1 },
+            { id: 6, name: "Aarikjeet Dhaliwal", role: "Bowler", matches: 28, pin: "142124", status: "Fit", notes: "", bat_runs: 54, bat_avg: 6.75, bat_sr: 42.00, high_score: "12", wickets: 38, b_avg: 12.80, b_econ: 4.95, best_bowl: "5/18", five_w: 1, rating: 8.2, ratingCount: 1 },
+            { id: 7, name: "Ryan Sabu", role: "Batsman", matches: 15, pin: "1234", status: "Fit", notes: "", bat_runs: 185, bat_avg: 18.50, bat_sr: 92.40, high_score: "31", wickets: 1, b_avg: 24.00, b_econ: 6.80, best_bowl: "1/8", five_w: 0, rating: 7.4, ratingCount: 1 },
+            { id: 8, name: "Linuka Kandage", role: "All-Rounder", matches: 18, pin: "1234", status: "Fit", notes: "", bat_runs: 142, bat_avg: 14.20, bat_sr: 78.50, high_score: "24", wickets: 11, b_avg: 16.30, b_econ: 5.90, best_bowl: "2/14", five_w: 0, rating: 7.5, ratingCount: 1 },
+            { id: 9, name: "Joshua Fernando", role: "Bowler", matches: 22, pin: "1234", status: "Fit", notes: "", bat_runs: 34, bat_avg: 5.60, bat_sr: 55.00, high_score: "9", wickets: 24, b_avg: 13.40, b_econ: 5.25, best_bowl: "3/11", five_w: 0, rating: 7.1, ratingCount: 1 },
+            { id: 10, name: "Jordan Fernando", role: "Batsman", matches: 14, pin: "1234", status: "Fit", notes: "", bat_runs: 215, bat_avg: 23.88, bat_sr: 105.30, high_score: "42*", wickets: 0, b_avg: 0, b_econ: 0, best_bowl: "0/0", five_w: 0, rating: 7.3, ratingCount: 1 },
+            { id: 11, name: "Tom Wheeler", role: "All-Rounder", matches: 17, pin: "1234", status: "Fit", notes: "", bat_runs: 412, bat_avg: 45.78, bat_sr: 92.58, high_score: "53*", wickets: 17, b_avg: 18.06, b_econ: 5.69, best_bowl: "2/15", five_w: 0, rating: 8.0, ratingCount: 1 },
+            { id: 12, name: "Lachlan McCormick", role: "Wicket-Keeper/Batsman", matches: 33, pin: "1234", status: "Fit", notes: "", bat_runs: 827, bat_avg: 45.94, bat_sr: 136.02, high_score: "67", wickets: 44, b_avg: 12.61, b_econ: 4.72, best_bowl: "6/5", five_w: 1, rating: 8.4, ratingCount: 1 },
+            { id: 13, name: "Jensen Van Rensburg", role: "Batsman", matches: 0, pin: "1234", status: "Fit", notes: "Newly added to squad.", bat_runs: 0, bat_avg: 0, bat_sr: 0, high_score: "0", wickets: 0, b_avg: 0, b_econ: 0, best_bowl: "0/0", five_w: 0, rating: 6.0, ratingCount: 1 }
+        ];
+
+        // Seeded Fan Data
+        let fanPredictions = [
+            { name: "Coach Mike", player: "Aarikjeet Dhaliwal", predictedWickets: 3, points: 25 },
+            { name: "Club Fan Matt", player: "Viyan Yohith Muralidaran", predictedWickets: 2, points: 10 }
+        ];
+
+        let currentlyEditingPlayerId = null;
+
+        function initApp() {
+            renderPlayers();
+            populateSelectors();
+            runComparison();
+            renderLeaderboard();
+            renderRatingsForm();
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        function updateCountdown() {
+            const now = new Date();
+            const nextMatch = new Date();
+            nextMatch.setHours(18, 0, 0, 0);
+            const daysUntilFriday = (5 - now.getDay() + 7) % 7;
+            if (daysUntilFriday === 0 && now.getHours() >= 18) {
+                nextMatch.setDate(now.getDate() + 7);
+            } else {
+                nextMatch.setDate(now.getDate() + daysUntilFriday);
+            }
+            const totalMs = nextMatch - now;
+            const days = Math.floor(totalMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((totalMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((totalMs % (1000 * 60)) / 1000);
+            document.getElementById('match-countdown').innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
+        }
+
+        function renderPlayers() {
+            const grid = document.getElementById('player-grid');
+            grid.innerHTML = '';
+            players.forEach(p => {
+                let statusClass = "status-fit";
+                if (p.status === "Injured") statusClass = "status-injured";
+                if (p.status === "Sick") statusClass = "status-sick";
+                if (p.status === "Absent") statusClass = "status-absent";
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <div class="player-name">${p.name}</div>
+                            <div class="player-role">${p.role}</div>
+                            <button class="btn-status-trigger" onclick="authenticatePlayer(${p.id})">⚙️ Update My Status</button>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="status-pill ${statusClass}">${p.status === 'Fit' ? 'Fit' : p.status}</span>
+                            <div style="font-size:0.75rem; margin-top:5px; font-weight:bold; color:var(--accent);">⭐ Rating: ${p.rating.toFixed(1)}/10</div>
+                        </div>
+                    </div>
+                    ${p.notes ? `<div class="notes-field">⚠️ ${p.notes}</div>` : ''}
+                    <div class="stat-group-title">Batting Data</div>
+                    <div class="stats-summary">
+                        <div class="stat-mini"><val>${p.bat_runs}</val><label>Runs</label></div>
+                        <div class="stat-mini"><val>${p.bat_avg}</val><label>Avg</label></div>
+                        <div class="stat-mini"><val>${p.high_score}</val><label>HS</label></div>
+                        <div class="stat-mini"><val>${p.bat_sr}</val><label>S/R</label></div>
+                    </div>
+                    <div class="stat-group-title">Bowling Data</div>
+                    <div class="stats-summary">
+                        <div class="stat-mini"><val>${p.wickets}</val><label>Wkts</label></div>
+                        <div class="stat-mini"><val>${p.b_avg}</val><label>Avg</label></div>
+                        <div class="stat-mini"><val>${p.b_econ}</val><label>Econ</label></div>
+                        <div class="stat-mini"><val>${p.best_bowl}</val><label>BBI</label></div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Leaderboard & Predictions Logic
+        function submitPrediction() {
+            const name = document.getElementById('fan-name').value.trim();
+            const playerId = parseInt(document.getElementById('predict-player-select').value);
+            const targetPlayer = players.find(p => p.id === playerId).name;
+            const predictedWickets = parseInt(document.getElementById('predict-wickets').value);
+
+            if (!name) { alert("Please enter your name first!"); return; }
+
+            // Random initial points for fun variation on dynamic entries
+            fanPredictions.push({ name: name, player: targetPlayer, predictedWickets: predictedWickets, points: 0 });
+            document.getElementById('fan-name').value = '';
+            renderLeaderboard();
+            alert("Prediction submitted into active running dashboard!");
+        }
+
+        function renderLeaderboard() {
+            fanPredictions.sort((a, b) => b.points - a.points);
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            fanPredictions.forEach((f, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${index + 1}</td><td><strong>${f.name}</strong></td><td>${f.player.split(' ')[0]}</td><td>${f.predictedWickets} Wkts</td><td><span style="color:var(--success-text); font-weight:bold;">${f.points} pts</span></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Live Team Ratings Setup
+        function renderRatingsForm() {
+            const container = document.getElementById('ratings-container');
+            container.innerHTML = '';
+            players.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'rating-row';
+                row.innerHTML = `
+                    <span style="font-size:0.85rem; font-weight:500;">${p.name.split(' ')[0]} ${p.name.split(' ')[1] || ''}</span>
+                    <input type="range" id="rate-p-${p.id}" min="1" max="10" step="0.5" value="7.0" oninput="document.getElementById('lbl-p-${p.id}').innerText = this.value">
+                    <span id="lbl-p-${p.id}" style="font-weight:bold; width:25px; text-align:right; color:var(--gold);">7.0</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function submitRatings() {
+            players.forEach(p => {
+                const selectedVal = parseFloat(document.getElementById(`rate-p-${p.id}`).value);
+                p.rating = ((p.rating * p.ratingCount) + selectedVal) / (p.ratingCount + 1);
+                p.ratingCount++;
+            });
+            renderPlayers();
+            alert("Match ratings compiled and added to season averages!");
+        }
+
+        function authenticatePlayer(playerId) {
+            const player = players.find(p => p.id === playerId);
+            const userPin = prompt(`Verification Required:\nEnter the private player PIN for ${player.name}:`);
+            if (userPin === player.pin) {
+                currentlyEditingPlayerId = playerId;
+                document.getElementById('portal-active-player-name').innerText = player.name;
+                document.getElementById('portal-status-select').value = player.status;
+                document.getElementById('portal-notes-input').value = player.notes;
+                document.getElementById('player-status-portal').style.display = 'block';
+            } else if (userPin !== null) {
+                alert("❌ Authentication Denied: Incorrect PIN.");
+            }
+        }
+
+        function savePlayerStatus() {
+            if (currentlyEditingPlayerId !== null) {
+                const player = players.find(p => p.id === currentlyEditingPlayerId);
+                player.status = document.getElementById('portal-status-select').value;
+                player.notes = document.getElementById('portal-notes-input').value;
+                closePortal();
+                renderPlayers();
+                runComparison();
+            }
+        }
+
+        function closePortal() { document.getElementById('player-status-portal').style.display = 'none'; currentlyEditingPlayerId = null; }
+
+        function populateSelectors() {
+            const p1 = document.getElementById('player1-select');
+            const p2 = document.getElementById('player2-select');
+            const predictSel = document.getElementById('predict-player-select');
+            p1.innerHTML = ''; p2.innerHTML = ''; predictSel.innerHTML = '';
+            
+            players.forEach((p, idx) => {
+                p1.add(new Option(p.name, p.id, idx===0, idx===0));
+                p2.add(new Option(p.name, p.id, idx===1, idx===1));
+                predictSel.add(new Option(p.name, p.id));
+            });
+        }
+
+        function runComparison() {
+            const id1 = parseInt(document.getElementById('player1-select').value);
+            const id2 = parseInt(document.getElementById('player2-select').value);
+            const p1 = players.find(p => p.id === id1);
+            const p2 = players.find(p => p.id === id2);
+
+            document.getElementById('p1-header').innerText = p1.name.split(' ')[0]; 
+            document.getElementById('p2-header').innerText = p2.name.split(' ')[0];
+
+            const structure = [
+                { type: 'metric', label: 'Availability', field: 'status', highWins: null },
+                { type: 'section', label: 'Batting' },
+                { type: 'metric', label: 'Runs', field: 'bat_runs', highWins: true },
+                { type: 'metric', label: 'Average', field: 'bat_avg', highWins: true },
+                { type: 'section', label: 'Bowling' },
+                { type: 'metric', label: 'Wickets', field: 'wickets', highWins: true },
+                { type: 'metric', label: 'Economy', field: 'b_econ', highWins: false }
+            ];
+
+            const tbody = document.getElementById('compare-body');
+            tbody.innerHTML = '';
+
+            structure.forEach(row => {
+                const tr = document.createElement('tr');
+                if (row.type === 'section') {
+                    tr.innerHTML = `<td colspan="3" class="category-row">${row.label}</td>`;
+                } else {
+                    let v1 = p1[row.field];
+                    let v2 = p2[row.field];
+                    let c1 = '', c2 = '';
+                    if (row.highWins !== null && v1 !== v2) {
+                        const p1Wins = row.highWins ? (v1 > v2) : (v1 < v2 && v1 > 0);
+                        const p2Wins = row.highWins ? (v2 > v1) : (v2 < v1 && v2 > 0);
+                        if (p1Wins) c1 = 'class="higher-stat"';
+                        if (p2Wins) c2 = 'class="higher-stat"';
+                    }
+                    tr.innerHTML = `<td ${c1}>${v1}</td><td style="font-weight:500; background:#fdfdfd; font-size:0.8rem;">${row.label}</td><td ${c2}>${v2}</td>`;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
