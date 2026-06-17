@@ -6,466 +6,793 @@
     <title>Burnside Cricket Club - Ultimate Squad Hub</title>
     <style>
         :root {
-            --primary: #0f172a;
-            --secondary: #0284c7;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #334155;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Fallback base colors - Dynamically overridden everyday by JavaScript */
+            --stadium-dark: #0a1118;
+            --pitch-green: #142b20;
+            --grass-accent: #1e4632;
+            --gold: #f39c12;
+            --silver: #bdc3c7;
+            --bronze: #cd7f32;
+            --card-bg: #111e29;
+            --text-light: #e2e8f0;
+            --text-muted: #8a99ad;
+            --winner: rgba(46, 213, 115, 0.15);
+            --winner-text: #2ed573;
+            --danger: #ff4757;
+            --warning: #ffa502;
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at top, var(--pitch-green) 0%, var(--stadium-dark) 80%);
+            background-attachment: fixed;
+            margin: 0;
             padding: 20px;
+            color: var(--text-light);
+            transition: background 0.5s ease;
         }
 
         header {
-            background: linear-gradient(135deg, var(--primary), #1e293b);
-            color: white;
-            padding: 30px;
             text-align: center;
+            padding: 30px 20px;
+            background: rgba(16, 29, 41, 0.9);
+            border: 1px solid var(--grass-accent);
             border-radius: 12px;
             margin-bottom: 25px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
 
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
+        header h1 { margin: 0; font-size: 2.8rem; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 10px rgba(255,255,255,0.1); }
+        header p { margin: 8px 0 0 0; color: var(--text-muted); font-size: 1.1rem; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        @media (min-width: 768px) {
-            .grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (min-width: 1200px) {
-            .grid { grid-template-columns: repeat(3, 1fr); }
-            .wide-card { grid-column: span 2; }
-            .full-card { grid-column: span 3; }
-        }
-
-        .card {
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 25px auto;
+            position: relative;
             background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
-            border: 1px solid #e2e8f0;
+            padding: 6px;
+            border-radius: 50px;
+            border: 2px solid var(--grass-accent);
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .search-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+        }
+        .search-container input::placeholder { color: var(--text-muted); }
+        .search-btn {
+            background: var(--grass-accent);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .search-results-dropdown {
+            position: absolute;
+            top: 105%;
+            left: 5%;
+            width: 90%;
+            background: var(--card-bg);
+            border: 1px solid var(--grass-accent);
+            border-radius: 8px;
+            z-index: 100;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+            display: none;
+        }
+        .search-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+        }
+        .search-item:hover { background: rgba(255,255,255,0.08); }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto 25px auto;
         }
 
-        .card h2 {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-            border-bottom: 3px solid var(--secondary);
-            padding-bottom: 8px;
+        @media (max-width: 768px) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: rgba(17, 30, 41, 0.95);
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-left: 5px solid var(--grass-accent);
+        }
+
+        .panel h2 { margin-top: 0; color: #fff; font-size: 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 18px; }
+
+        .timetable-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 12px 10px;
+            border-bottom: 1px dashed rgba(255,255,255,0.1);
         }
-
-        /* Countdown & Fixture */
-        .countdown-box {
-            background: #f0f9ff;
-            border: 2px dashed var(--secondary);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--secondary);
-            margin-bottom: 15px;
-        }
-
-        .fixture-details {
-            background: #f8fafc;
+        .match-badge { background: var(--grass-accent); color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+        
+        .countdown-container {
+            background: rgba(0,0,0,0.4);
             padding: 12px;
             border-radius: 8px;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            text-align: center;
+            margin-top: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .countdown-timer {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ff4757;
+            font-family: monospace;
+            letter-spacing: 2px;
         }
 
-        .map-btn {
-            display: inline-block;
-            margin-top: 10px;
-            background: var(--secondary);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: 0.2s;
-        }
-        .map-btn:hover { background: #0369a1; }
-
-        /* Lineup */
-        .lineup-list { list-style: none; }
+        .lineup-list { list-style: none; padding: 0; margin: 15px 0 0 0; }
         .lineup-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-        .status-locked { background: #dcfce7; color: #15803d; }
-        .status-maybe { background: #fef3c7; color: #b45309; }
-
-        /* Player Portal */
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.03);
             margin-bottom: 6px;
-            font-weight: 600;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            font-size: 1rem;
         }
-        button {
-            background: var(--primary);
+        .lineup-item.maybe { background: rgba(243, 156, 18, 0.1); border-left: 3px solid var(--gold); }
+        .lineup-status { font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
+        .status-confirmed { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .status-unconfirmed { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+
+        select, input[type="text"], input[type="number"] {
+            background: #162633;
+            border: 1px solid var(--grass-accent);
             color: white;
-            padding: 12px 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-action {
+            background: var(--grass-accent);
+            color: white;
             border: none;
+            padding: 8px 18px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            width: 100%;
-            transition: 0.2s;
         }
-        button:hover { background: #1e293b; }
 
-        /* Stats Machine */
-        .comparison-selectors {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
+        .dashboard-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.9rem; margin-top: 10px; }
+        .dashboard-table th, .dashboard-table td { padding: 10px; border: 1px solid rgba(255,255,255,0.08); }
+        .dashboard-table th { background-color: #0c161f; color: var(--text-light); }
+        .category-row { background-color: rgba(255,255,255,0.05); font-weight: bold; color: #fff; text-align: left; padding-left: 12px; }
+        .higher-stat { background-color: var(--winner); font-weight: bold; color: var(--winner-text); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 20px; 
+            border: 1px solid rgba(255,255,255,0.05);
+            border-top: 4px solid var(--grass-accent);
+            transition: transform 0.2s, border-color 0.2s;
         }
-        .stats-table {
+        .card:hover { transform: translateY(-3px); border-color: var(--gold); }
+        .card.highlighted-search { border-color: var(--gold) !important; box-shadow: 0 0 25px var(--gold); }
+        
+        .player-name { font-size: 1.25rem; font-weight: bold; color: white; }
+        .player-role { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .new-stat-table {
             width: 100%;
+            margin-top: 12px;
             border-collapse: collapse;
-            text-align: center;
-        }
-        .stats-table th { background: #f1f5f9; padding: 10px; }
-        .stats-table td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; }
-        .stat-name { font-weight: 600; background: #f8fafc; }
-
-        /* Predictions & Leaderboard */
-        .prediction-input-group {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .leaderboard-list { list-style: none; margin-top: 15px; }
-        .leaderboard-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            background: #f8fafc;
-            margin-bottom: 5px;
-            border-radius: 4px;
-        }
-
-        /* Post-match Slider */
-        .slider-ui {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .slider-ui input { width: 80%; }
-        .rating-val { font-size: 2rem; font-weight: bold; color: var(--secondary); }
-
-        /* POTM & Duck Tracker */
-        .potm-display {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            border: 2px solid var(--accent);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-        .potm-name { font-size: 1.4rem; font-weight: bold; color: #92400e; }
-        .potm-stats { font-style: italic; margin-top: 5px; color: #78350f; }
-
-        .duck-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background: #fff5f5;
-            border-left: 4px solid var(--danger);
-            margin-bottom: 6px;
-            border-radius: 4px;
-        }
-        .duck-count { font-weight: bold; color: var(--danger); }
-
-        /* Banter Chat */
-        .chat-box {
-            height: 180px;
-            border: 1px solid #cbd5e1;
+            font-size: 0.85rem;
+            background: rgba(0,0,0,0.2);
             border-radius: 6px;
-            padding: 10px;
-            overflow-y: auto;
-            background: #fafafa;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
+            overflow: hidden;
         }
-        .chat-msg { margin-bottom: 8px; line-content: 1.4; }
-        .chat-user { font-weight: bold; color: var(--secondary); }
+        .new-stat-table th { background: #0c161f; color: var(--text-muted); font-weight: 600; padding: 6px; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.5px; }
+        .new-stat-table td { padding: 8px 6px; color: #fff; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        .btn-status-trigger {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-status-trigger:hover { color: white; border-color: white; }
+
+        .notes-field { background: rgba(243, 156, 18, 0.1); border-left: 3px solid var(--gold); font-size: 0.8rem; padding: 6px 10px; margin-top: 12px; color: #fbc531; }
+
+        .portal-panel {
+            background: var(--card-bg);
+            border: 2px dashed var(--grass-accent);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .rating-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .status-pill { font-size: 0.75rem; font-weight: bold; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+        .status-fit { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .status-injured { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .status-sick { background: rgba(110, 37, 230, 0.2); color: #9c27b0; }
+        .status-absent { background: rgba(255, 165, 2, 0.2); color: #ffa502; }
+
+        .analytics-leader-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, #111e29 100%);
+            border: 1px solid var(--grass-accent);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .rank-1 { border-left: 5px solid var(--gold) !important; background: linear-gradient(135deg, #242013 0%, #111e29 100%); }
+        .rank-2 { border-left: 5px solid var(--silver) !important; background: linear-gradient(135deg, #1b2024 0%, #111e29 100%); }
+        .rank-3 { border-left: 5px solid var(--bronze) !important; background: linear-gradient(135deg, #1f1a16 0%, #111e29 100%); }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Burnside Cricket Club</h1>
-        <p>Ultimate Squad Hub & Match Day Center</p>
+        <p>Squad Hub, Performance Search Engine & Live Statistics Ecosystem</p>
     </header>
 
-    <div class="grid">
+    <div class="search-container">
+        <input type="text" id="player-search-input" placeholder="🔍 Type a player's name (e.g., Viyan, Sam, Thinuka)..." oninput="handlePlayerSearch()">
+        <button class="search-btn">Search</button>
+        <div class="search-results-dropdown" id="search-dropdown"></div>
+    </div>
 
-        <div class="card">
-            <h2>Next Fixture</h2>
-            <div class="countdown-box" id="countdown">02d 04h 12m 05s</div>
-            <div class="fixture-details">
-                <strong>Match:</strong> Burnside T20 Smash<br>
-                <strong>Date/Time:</strong> Friday Night Match Day<br>
-                <strong>Venue:</strong> Sir Richard Hadlee Sports Centre<br>
-                <strong>Location:</strong> Hagley Park, Christchurch<br>
-                <a href="https://maps.google.com/?q=Sir+Richard+Hadlee+Sports+Centre+Christchurch" target="_blank" class="map-btn">📍 Open Field Map & Directions</a>
-            </div>
+    <div style="max-width: 1200px; margin: 0 auto 25px auto;">
+        <div class="panel" style="border-top: 4px solid var(--gold);">
+            <h2>🏆 Elite Club Sabermetrics (Official Season Rankings)</h2>
+            <div id="analytics-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;"></div>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>Friday Lineup</h2>
+    <div class="dashboard-layout">
+        <div class="panel">
+            <h2>📅 Weekly Fixture Timetable</h2>
+            <div class="timetable-row">
+                <div>
+                    <span class="match-badge">WEEKLY GAME</span>
+                    <strong style="margin-left: 10px;">Every Friday</strong>
+                </div>
+                <div>Time: <strong style="color: var(--gold);">6:00 PM</strong></div>
+            </div>
+            <div class="timetable-row">
+                <div style="color: var(--text-light);">📍 Venue: <strong>Sir Richard Hadlee Sports Centre</strong></div>
+            </div>
+            <div class="countdown-container">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">⏳ Countdown to Match Play</div>
+                <div class="countdown-timer" id="match-countdown">Calculating...</div>
+            </div>
+
+            <h3 style="margin-top: 20px; color: #fff; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">🏏 Friday's Starting Lineup</h3>
             <ul class="lineup-list">
-                <li class="lineup-item"><span>1. Viyan (wk)</span> <span class="status-badge status-locked">Locked In</span></li>
-                <li class="lineup-item"><span>2. Sam (c)</span> <span class="status-badge status-locked">Locked In</span></li>
-                <li class="lineup-item"><span>3. Tom</span> <span class="status-badge status-locked">Locked In</span></li>
-                <li class="lineup-item"><span>4. Mitchell</span> <span class="status-badge status-maybe">Game-time Decision</span></li>
-                <li class="lineup-item"><span>5. Lachie</span> <span class="status-badge status-locked">Locked In</span></li>
-                <li class="lineup-item"><span>6. Ben</span> <span class="status-badge status-maybe">Game-time Decision</span></li>
+                <li class="lineup-item maybe"><span><strong>Viyan Yohith Muralidaran</strong></span><span class="lineup-status status-unconfirmed">Might Come</span></li>
+                <li class="lineup-item"><span><strong>Aarikjeet Dhaliwal</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
+                <li class="lineup-item maybe"><span><strong>Ryan Sabu</strong></span><span class="lineup-status status-unconfirmed">Might Come</span></li>
+                <li class="lineup-item"><span><strong>Jensen Van Rensburg</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
+                <li class="lineup-item"><span><strong>Thinuka Kandage</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
+                <li class="lineup-item"><span><strong>Linuka Kandage</strong></span><span class="lineup-status status-confirmed">Confirmed</span></li>
             </ul>
         </div>
 
-        <div class="card">
-            <h2>Player Status Portal</h2>
-            <form id="portalForm" onsubmit="event.preventDefault(); alert('Status updated safely for management review.');">
-                <div class="form-group">
-                    <label>Player Name</label>
-                    <select required>
-                        <option value="">Select yourself...</option>
-                        <option>Viyan</option>
-                        <option>Sam</option>
-                        <option>Tom</option>
-                        <option>Mitchell</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Private Login PIN</label>
-                    <input type="password" placeholder="••••" max-length="4" required style="letter-spacing: 3px; font-weight: bold;">
-                </div>
-                <div class="form-group">
-                    <label>Availability Status</label>
-                    <select>
-                        <option>Available & 100% Fit</option>
-                        <option>Carrying Injury / Sidelined</option>
-                        <option>Unavailable This Week</option>
-                    </select>
-                </div>
-                <button type="submit">Update Status</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>Club Honors & Banter</h2>
-            <div style="margin-bottom: 20px;">
-                <h3 style="font-size: 1rem; margin-bottom: 8px; color: var(--accent);">🏆 Last Match POTM</h3>
-                <div class="potm-display">
-                    <div class="potm-name">Viyan</div>
-                    <div class="potm-stats">42 Runs (21 balls) & 3 Wickets</div>
-                </div>
+        <div class="panel">
+            <h2>📊 Performance Comparison Machine</h2>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <select id="player1-select" onchange="runComparison()" style="width:45%;"></select>
+                <strong style="align-self: center;">VS</strong>
+                <select id="player2-select" onchange="runComparison()" style="width:45%;"></select>
             </div>
-            <div>
-                <h3 style="font-size: 1rem; margin-bottom: 8px; color: var(--danger);">🦆 The "Blob" Duck Tracker</h3>
-                <div class="duck-row"><span>Tom</span><span class="duck-count">2 (Owes Chips)</span></div>
-                <div class="duck-row"><span>Mitchell</span><span class="duck-count">1</span></div>
-                <div class="duck-row"><span>Ben</span><span class="duck-count">1</span></div>
-            </div>
-        </div>
-
-        <div class="card wide-card">
-            <h2>Performance Comparison Machine</h2>
-            <div class="comparison-selectors">
-                <select id="p1" onchange="compareStats()">
-                    <option value="viyan">Viyan</option>
-                    <option value="sam">Sam</option>
-                </select>
-                <select id="p2" onchange="compareStats()">
-                    <option value="sam">Sam</option>
-                    <option value="viyan">Viyan</option>
-                </select>
-            </div>
-            <table class="stats-table">
+            <table class="dashboard-table">
                 <thead>
                     <tr>
-                        <th id="p1-head">Player 1</th>
-                        <th>Stat Metric</th>
-                        <th id="p2-head">Player 2</th>
+                        <th id="p1-header" style="width: 38%;">P1</th>
+                        <th style="width: 24%;">Metric</th>
+                        <th id="p2-header" style="width: 38%;">P2</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr><td id="p1-runs">342</td><td class="stat-name">Total Runs</td><td id="p2-runs">215</td></tr>
-                    <tr><td id="p1-avg">38.0</td><td class="stat-name">Batting Avg</td><td id="p2-avg">23.8</td></tr>
-                    <tr><td id="p1-sr">145.2</td><td class="stat-name">Strike Rate</td><td id="p2-sr">118.5</td></tr>
-                    <tr><td id="p1-wkts">14</td><td class="stat-name">Wickets</td><td id="p2-wkts">18</td></tr>
-                    <tr><td id="p1-econ">6.8</td><td class="stat-name">Economy Rate</td><td id="p2-econ">6.2</td></tr>
-                </tbody>
+                <tbody id="compare-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dashboard-layout">
+        <div class="panel">
+            <h2>🔮 Fan Prediction Zone</h2>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div>
+                    <label style="display:block; font-weight:bold; margin-bottom:2px;">Fan Name:</label>
+                    <input type="text" id="fan-name" placeholder="Enter your name" style="width:95%;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex:1;">
+                        <label style="display:block; font-weight:bold; margin-bottom:2px;">Pick Player:</label>
+                        <select id="predict-player-select" style="width:100%;"></select>
+                    </div>
+                    <div style="flex:1;">
+                        <label style="display:block; font-weight:bold; margin-bottom:2px;">Predicted Wickets:</label>
+                        <input type="number" id="predict-wickets" min="0" max="10" value="0" style="width:80%;">
+                    </div>
+                </div>
+                <button class="btn-action" onclick="submitPrediction()" style="margin-top: 5px;">Submit Prediction</button>
+            </div>
+
+            <h3 style="margin-top:20px; font-size:1.1rem;">🏆 Leaderboard (Fan Points)</h3>
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Fan Name</th>
+                        <th>Target Player</th>
+                        <th>Predicted Wkts</th>
+                        <th>Total Points</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
             </table>
         </div>
 
-        <div class="card">
-            <h2>Fan Prediction Zone</h2>
-            <div class="prediction-input-group">
-                <input type="text" id="fanName" placeholder="Your Name">
-                <select id="fanWkts">
-                    <option value="1">1 Wkt</option>
-                    <option value="2">2 Wkts</option>
-                    <option value="3">3+ Wkts</option>
-                </select>
-            </div>
-            <button onclick="addPrediction()">Lock In Prediction</button>
-            <ul class="leaderboard-list" id="leaderboard">
-                <li class="leaderboard-item"><span>🏏 Club_Fan_01</span> <strong>15 pts</strong></li>
-                <li class="leaderboard-item"><span>🏏 CricketDad</span> <strong>10 pts</strong></li>
-            </ul>
+        <div class="panel">
+            <h2>⭐️ Post-Match Player Ratings</h2>
+            <div id="ratings-container" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;"></div>
+            <button class="btn-action" onclick="submitRatings()">Submit Team Ratings</button>
         </div>
-
-        <div class="card">
-            <h2>Post-Match Player Ratings</h2>
-            <p style="font-size: 0.9rem; margin-bottom: 10px;">Select a player and slide to rate their Friday night efforts:</p>
-            <select id="ratePlayer" style="margin-bottom: 15px;">
-                <option>Viyan</option>
-                <option>Sam</option>
-                <option>Tom</option>
-            </select>
-            <div class="slider-ui">
-                <input type="range" min="1" max="10" value="8" id="ratingSlider" oninput="document.getElementById('ratingNum').innerText = this.value">
-                <div class="rating-val"><span id="ratingNum">8</span>/10</div>
-            </div>
-            <button onclick="alert('Rating submitted safely to the seasonal average database!')">Submit Community Score</button>
-        </div>
-
-        <div class="card">
-            <h2>Match-Day Banter Feed</h2>
-            <div class="chat-box" id="chatBox">
-                <div class="chat-msg"><span class="chat-user">Coach Sam:</span> Make sure you arrive 30 mins before the first ball!</div>
-                <div class="chat-msg"><span class="chat-user">Viyan:</span> Net 4 is locked in for warmups. Let's get it.</div>
-                <div class="chat-msg"><span class="chat-user">Tom:</span> Someone else is buying the hot chips this week, I'm scoring runs.</div>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="chatInput" placeholder="Type club banter..." style="flex: 1;">
-                <button onclick="sendBanter()" style="width: auto; padding: 10px 15px;">Post</button>
-            </div>
-        </div>
-
     </div>
 
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div class="portal-panel" id="player-status-portal">
+            <h3 style="margin-top:0;">🔒 Player Status Portal: <span id="portal-active-player-name"></span></h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <label>Set readiness status:</label>
+                <select id="portal-status-select" style="font-weight: bold;">
+                    <option value="Fit">🟢 Fit & Ready</option>
+                    <option value="Sick">🟣 Sick</option>
+                    <option value="Injured">🔴 Injured</option>
+                    <option value="Absent">🟡 Absent</option>
+                </select>
+                <input type="text" id="portal-notes-input" placeholder="Optional status note" style="width: 300px;">
+                <button onclick="savePlayerStatus()" class="btn-action">Save Updates</button>
+                <button onclick="closePortal()" style="background: #e0e0e0; color: #333; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <h2 style="max-width: 1200px; margin: 0 auto 15px auto; color: white;">🏏 Burnside Squad Roster & Deep Box Scores</h2>
+    <div class="grid" id="player-grid"></div>
+
     <script>
-        // Countdown Clock Logic
-        function updateCountdown() {
-            const now = new Date().getTime();
-            // Simulates a recurring match dynamic targets
-            const target = now + (2 * 24 * 60 * 60 * 1000); 
-            const diff = target - now;
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const secs = Math.floor((diff % (1000 * 60)) / 1000);
-            document.getElementById("countdown").innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
-        }
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
+        // System Data Arrays - Configured with aggregated Viyan values
+        const players = [
+            { 
+                id: 1, 
+                name: "Samuel Bennetts", 
+                role: "Wicket-Keeper/Batsman", 
+                status: "Absent", 
+                notes: "Absent due to unknown causes.", 
+                bat_inn: 18, bat_runs: 455, bat_avg: 91.00, bat_sr: 119.74, high_score: "64*", 
+                wickets: 19, b_avg: 11.11, b_econ: 3.84, best_bowl: "3/5", b_sr: 14.2,
+                catches: 12, stumpings: 5, runouts: 4,
+                rating: 9.2, ratingCount: 1, rank_pos: 1, points: 980
+            },
+            { 
+                id: 2, 
+                name: "Viyan Yohith Muralidaran", 
+                role: "All-Rounder", 
+                status: "Injured", 
+                notes: "Aggregated sheets updated. Holding the clear team edge.", 
+                bat_inn: 55, bat_runs: 432, bat_avg: 18.00, bat_sr: 48.81, high_score: "34*", 
+                wickets: 67, b_avg: 11.88, b_econ: 4.99, best_bowl: "5/11", b_sr: 14.28,
+                catches: 1, stumpings: 0, runouts: 7,
+                rating: 9.0, ratingCount: 1, rank_pos: 2, points: 945
+            },
+            { 
+                id: 3, 
+                name: "Aarikjeet Dhaliwal", 
+                role: "Bowler", 
+                status: "Fit", 
+                notes: "", 
+                bat_inn: 42, bat_runs: 969, bat_avg: 22.00, bat_sr: 105.48, high_score: "48*", 
+                wickets: 51, b_avg: 20.63, b_econ: 6.13, best_bowl: "3/15", b_sr: 21.3,
+                catches: 4, stumpings: 0, runouts: 1,
+                rating: 8.5, ratingCount: 1, rank_pos: 3, points: 840
+            },
+            { 
+                id: 4, 
+                name: "Thinuka Kandage", 
+                role: "Batsman", 
+                status: "Fit", 
+                notes: "", 
+                bat_inn: 22, bat_runs: 194, bat_avg: 12.93, bat_sr: 44.09, high_score: "21*", 
+                wickets: 19, b_avg: 23.95, b_econ: 6.32, best_bowl: "2/15", b_sr: 22.74,
+                catches: 4, stumpings: 0, runouts: 1,
+                rating: 7.8, ratingCount: 1, rank_pos: 4, points: 510
+            },
+            { 
+                id: 5, 
+                name: "Samuel Aynsley", 
+                role: "All-Rounder", 
+                status: "Fit", 
+                notes: "", 
+                bat_inn: 58, bat_runs: 916, bat_avg: 25.44, bat_sr: 88.59, high_score: "35*", 
+                wickets: 70, b_avg: 17.10, b_econ: 6.34, best_bowl: "4/10", b_sr: 19.5,
+                catches: 8, stumpings: 0, runouts: 3,
+                rating: 8.1, ratingCount: 1, rank_pos: 5, points: 815
+            },
+            { 
+                id: 6, 
+                name: "Linuka Kandage", 
+                role: "Bowler", 
+                status: "Fit", 
+                notes: "", 
+                bat_inn: 11, bat_runs: 85, bat_avg: 14.17, bat_sr: 42.08, high_score: "26*", 
+                wickets: 10, b_avg: 14.30, b_econ: 5.96, best_bowl: "4/8", b_sr: 14.40,
+                catches: 1, stumpings: 0, runouts: 3,
+                rating: 7.4, ratingCount: 1, rank_pos: 6, points: 490
+            }
+        ];
 
-        // Stats Engine Logic
-        const dataset = {
-            viyan: { name: "Viyan", runs: 342, avg: 38.0, sr: 145.2, wkts: 14, econ: 6.8 },
-            sam: { name: "Sam", runs: 215, avg: 23.8, sr: 118.5, wkts: 18, econ: 6.2 }
-        };
+        let fanPredictions = [
+            { name: "Coach Mike", player: "Aarikjeet Dhaliwal", predictedWickets: 3, points: 25 },
+            { name: "Club Fan Matt", player: "Viyan Yohith Muralidaran", predictedWickets: 2, points: 15 }
+        ];
 
-        function compareStats() {
-            const p1Key = document.getElementById("p1").value;
-            const p2Key = document.getElementById("p2").value;
-            const p1 = dataset[p1Key];
-            const p2 = dataset[p2Key];
+        let currentlyEditingPlayerId = null;
 
-            document.getElementById("p1-head").innerText = p1.name;
-            document.getElementById("p2-head").innerText = p2.name;
-
-            document.getElementById("p1-runs").innerText = p1.runs;
-            document.getElementById("p2-runs").innerText = p2.runs;
-            document.getElementById("p1-avg").innerText = p1.avg;
-            document.getElementById("p2-avg").innerText = p2.avg;
-            document.getElementById("p1-sr").innerText = p1.sr;
-            document.getElementById("p2-sr").innerText = p2.sr;
-            document.getElementById("p1-wkts").innerText = p1.wkts;
-            document.getElementById("p2-wkts").innerText = p2.wkts;
-            document.getElementById("p1-econ").innerText = p1.econ;
-            document.getElementById("p2-econ").innerText = p2.econ;
-        }
-
-        // Add Prediction Logic
-        function addPrediction() {
-            const name = document.getElementById("fanName").value.trim();
-            const wkts = document.getElementById("fanWkts").value;
-            if(!name) { alert("Please enter your name first!"); return; }
+        function applyDailyColorTheme() {
+            const date = new Date();
+            const seed = date.getFullYear() * 365 + (date.getMonth() + 1) * 31 + date.getDate();
+            const primaryHue = (seed * 47) % 360; 
             
-            const li = document.createElement("li");
-            li.className = "leaderboard-item";
-            li.innerHTML = `<span>🏏 ${name} (${wkts} Wkt Pick)</span> <strong>0 pts</strong>`;
-            document.getElementById("leaderboard").appendChild(li);
-            document.getElementById("fanName").value = "";
-            alert("Prediction locked in! Point tallies update post-match.");
+            const pitchColor = `hsl(${primaryHue}, 35%, 14%)`;
+            const accentColor = `hsl(${primaryHue}, 40%, 22%)`;
+            
+            document.documentElement.style.setProperty('--pitch-green', pitchColor);
+            document.documentElement.style.setProperty('--grass-accent', accentColor);
+            
+            document.querySelectorAll('.btn-action, .search-btn, .match-badge').forEach(el => {
+                el.style.backgroundColor = accentColor;
+                el.style.border = `1px solid hsl(${primaryHue}, 45%, 30%)`;
+            });
         }
 
-        // Live Banter Logic
-        function sendBanter() {
-            const text = document.getElementById("chatInput").value.trim();
-            if(!text) return;
-            const item = document.createElement("div");
-            item.className = "chat-msg";
-            item.innerHTML = `<span class="chat-user">You:</span> ${text}`;
-            const box = document.getElementById("chatBox");
-            box.appendChild(item);
-            box.scrollTop = box.scrollHeight;
-            document.getElementById("chatInput").value = "";
+        function initApp() {
+            applyDailyColorTheme();
+            renderPlayers();
+            populateSelectors();
+            runComparison();
+            renderLeaderboard();
+            renderRatingsForm();
+            renderAdvancedAnalytics();
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            
+            document.addEventListener('click', function(e) {
+                if(!e.target.closest('.search-container')) {
+                    document.getElementById('search-dropdown').style.display = 'none';
+                }
+            });
         }
+
+        function updateCountdown() {
+            const now = new Date();
+            const nextMatch = new Date();
+            nextMatch.setHours(18, 0, 0, 0);
+            const daysUntilFriday = (5 - now.getDay() + 7) % 7;
+            if (daysUntilFriday === 0 && now.getHours() >= 18) {
+                nextMatch.setDate(now.getDate() + 7);
+            } else {
+                nextMatch.setDate(now.getDate() + daysUntilFriday);
+            }
+            const totalMs = nextMatch - now;
+            const days = Math.floor(totalMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((totalMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((totalMs % (1000 * 60)) / 1000);
+            document.getElementById('match-countdown').innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
+        }
+
+        function handlePlayerSearch() {
+            const val = document.getElementById('player-search-input').value.toLowerCase().trim();
+            const dropdown = document.getElementById('search-dropdown');
+            if(!val) { dropdown.style.display = 'none'; return; }
+
+            const filtered = players.filter(p => p.name.toLowerCase().includes(val) || p.role.toLowerCase().includes(val));
+            if(filtered.length === 0) {
+                dropdown.innerHTML = `<div class="search-item" style="color:var(--text-muted)">No club player matches found</div>`;
+                dropdown.style.display = 'block';
+                return;
+            }
+
+            dropdown.innerHTML = '';
+            filtered.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'search-item';
+                item.innerHTML = `<span><strong>${p.name}</strong> <small style="color:var(--text-muted)">(${p.role})</small></span><span style="color:var(--gold); font-weight:bold;">View Stats &rarr;</span>`;
+                item.onclick = function() {
+                    focusPlayerCard(p.id);
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = 'block';
+        }
+
+        function focusPlayerCard(playerId) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('highlighted-search'));
+            const cardEl = document.getElementById(`player-card-${playerId}`);
+            if(cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                cardEl.classList.add('highlighted-search');
+            }
+        }
+
+        function renderAdvancedAnalytics() {
+            const container = document.getElementById('analytics-container');
+            container.innerHTML = '';
+
+            const topPerformers = [...players].sort((a, b) => a.rank_pos - b.rank_pos).slice(0, 3);
+
+            topPerformers.forEach((p, idx) => {
+                let badgeLabel = "";
+                let classRank = "";
+                if(p.rank_pos === 1) { badgeLabel = "👑 #1 Gold MVP"; classRank = "rank-1"; }
+                if(p.rank_pos === 2) { badgeLabel = "🥈 #2 Silver MVP"; classRank = "rank-2"; }
+                if(p.rank_pos === 3) { badgeLabel = "🥉 #3 Bronze MVP"; classRank = "rank-3"; }
+
+                const div = document.createElement('div');
+                div.className = `analytics-leader-card ${classRank}`;
+                div.innerHTML = `
+                    <div>
+                        <strong style="color: #fff; font-size: 1rem;">${p.name}</strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${p.role}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.75rem; display:block; font-weight: bold; color: var(--gold); text-transform: uppercase;">${badgeLabel}</span>
+                        <strong style="font-size: 1.1rem; color: #2ed573;">${p.points} Rank Points</strong>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderPlayers() {
+            const grid = document.getElementById('player-grid');
+            grid.innerHTML = '';
+            players.forEach(p => {
+                let statusClass = "status-fit";
+                if (p.status === "Injured") statusClass = "status-injured";
+                if (p.status === "Sick") statusClass = "status-sick";
+                if (p.status === "Absent") statusClass = "status-absent";
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `player-card-${p.id}`;
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <div class="player-name">${p.name}</div>
+                            <div class="player-role">${p.role}</div>
+                            <button class="btn-status-trigger" onclick="authenticatePlayer(${p.id})">⚙️ Adjust Status</button>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="status-pill ${statusClass}">${p.status}</span>
+                            <div style="font-size:0.75rem; margin-top:8px; font-weight:bold; color:var(--gold);">⭐ Season Rating: ${p.rating.toFixed(1)}</div>
+                        </div>
+                    </div>
+                    ${p.notes ? `<div class="notes-field">${p.notes}</div>` : ''}
+                    
+                    <table class="new-stat-table">
+                        <thead>
+                            <tr><th colspan="4">Batting Profile Sheet</th></tr>
+                            <tr><th>Innings</th><th>Runs</th><th>Avg</th><th>S/R</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>${p.bat_inn}</td><td>${p.bat_runs}</td><td>${p.bat_avg.toFixed(2)}</td><td>${p.bat_sr.toFixed(2)}</td></tr>
+                        </tbody>
+                    </table>
+
+                    <table class="new-stat-table">
+                        <thead>
+                            <tr><th colspan="4">Bowling Profile Sheet</th></tr>
+                            <tr><th>Wickets</th><th>Avg</th><th>Econ</th><th>S/R</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>${p.wickets}</td><td>${p.b_avg.toFixed(2)}</td><td>${p.b_econ.toFixed(2)}</td><td>${p.b_sr.toFixed(2)}</td></tr>
+                        </tbody>
+                    </table>
+
+                    <table class="new-stat-table">
+                        <thead>
+                            <tr><th colspan="3">Fielding & Dismissals</th></tr>
+                            <tr><th>Catches</th><th>Stumpings</th><th>Run Outs</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>${p.catches}</td><td>${p.stumpings}</td><td>${p.runouts}</td></tr>
+                        </tbody>
+                    </table>
+                `;
+                grid.appendChild(card);
+            });
+            applyDailyColorTheme();
+        }
+
+        function submitPrediction() {
+            const name = document.getElementById('fan-name').value.trim();
+            const playerId = parseInt(document.getElementById('predict-player-select').value);
+            const targetPlayer = players.find(p => p.id === playerId).name;
+            const predictedWickets = parseInt(document.getElementById('predict-wickets').value);
+
+            if (!name) { alert("Please input fan name."); return; }
+
+            fanPredictions.push({ name: name, player: targetPlayer, predictedWickets: predictedWickets, points: 0 });
+            document.getElementById('fan-name').value = '';
+            renderLeaderboard();
+            alert("Fan prediction logged inside match core engine.");
+        }
+
+        function renderLeaderboard() {
+            fanPredictions.sort((a, b) => b.points - a.points);
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            fanPredictions.forEach((f, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${index + 1}</td><td><strong>${f.name}</strong></td><td>${f.player.split(' ')[0]}</td><td>${f.predictedWickets} Wkts</td><td><span style="color:var(--winner-text); font-weight:bold;">${f.points} pts</span></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderRatingsForm() {
+            const container = document.getElementById('ratings-container');
+            container.innerHTML = '';
+            players.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'rating-row';
+                row.innerHTML = `
+                    <span style="font-size:0.85rem;">${p.name.split(' ')[0]} ${p.name.split(' ')[1] || ''}</span>
+                    <input type="range" id="rate-p-${p.id}" min="1" max="10" step="0.5" value="7.5" oninput="document.getElementById('lbl-p-${p.id}').innerText = this.value">
+                    <span id="lbl-p-${p.id}" style="font-weight:bold; width:25px; text-align:right; color:var(--gold);">7.5</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function submitRatings() {
+            players.forEach(p => {
+                const selectedVal = parseFloat(document.getElementById(`rate-p-${p.id}`).value);
+                p.rating = ((p.rating * p.ratingCount) + selectedVal) / (p.ratingCount + 1);
+                p.ratingCount++;
+            });
+            renderPlayers();
+            alert("Form match cards ratings accepted!");
+        }
+
+        function authenticatePlayer(playerId) {
+            const player = players.find(p => p.id === playerId);
+            const userPin = prompt(`Verification Entry Required:\nEnter private credentials for ${player.name}:`);
+            if (userPin === "1234" || userPin === "234688" || userPin === "142124") {
+                currentlyEditingPlayerId = playerId;
+                document.getElementById('portal-active-player-name').innerText = player.name;
+                document.getElementById('portal-status-select').value = player.status;
+                document.getElementById('portal-notes-input').value = player.notes;
+                document.getElementById('player-status-portal').style.display = 'block';
+            } else if (userPin !== null) {
+                alert("❌ Authentication failure.");
+            }
+        }
+
+        function savePlayerStatus() {
+            if (currentlyEditingPlayerId !== null) {
+                const player = players.find(p => p.id === currentlyEditingPlayerId);
+                player.status = document.getElementById('portal-status-select').value;
+                player.notes = document.getElementById('portal-notes-input').value;
+                closePortal();
+                renderPlayers();
+                runComparison();
+                renderAdvancedAnalytics();
+            }
+        }
+
+        function closePortal() { document.getElementById('player-status-portal').style.display = 'none'; currentlyEditingPlayerId = null; }
+
+        function populateSelectors() {
+            const p1 = document.getElementById('player1-select');
+            const p2 = document.getElementById('player2-select');
+            const predictSel = document.getElementById('predict-player-select');
+            p1.innerHTML = ''; p2.innerHTML = ''; predictSel.innerHTML = '';
+            
+            players.forEach((p, idx) => {
+                p1.add(new Option(p.name, p.id, p.id===2, p.id===2)); 
+                p2.add(new Option(p.name, p.id, p.id===4, p.id===4)); 
+                predictSel.add(new Option(p.name, p.id));
+            });
+        }
+
+        function runComparison() {
+            const id1 = parseInt(document.getElementById('player1-select').value);
+            const id2 = parseInt(document.getElementById('player2-select').value);
+            const p1 = players.find(p => p.id === id1);
+            const p2 = players.find(p => p.id === id2);
+
+            document.getElementById('p1-header').innerText = p1.name.split(' ')[0]; 
+            document.getElementById('p2-header').innerText = p2.name.split(' ')[0];
+
+            const structure = [
+                { type: 'metric', label: 'Availability', field: 'status', highWins: null },
+                { type: 'section', label: 'Batting Data Metrics' },
+                { type: 'metric', label: 'Runs Scored', field: 'bat_runs', highWins: true },
+                { type: 'metric', label: 'Innings Played', field: 'bat_inn', highWins: true },
+                { type: 'metric', label: 'Batting Average', field: 'bat_avg', highWins: true },
+                { type: 'section', label: 'Bowling Data Metrics' },
+                { type: 'metric', label: 'Total Wickets', field: 'wickets', highWins: true },
+                { type: 'metric', label: 'Bowling Average', field: 'b_avg', highWins: false },
+                { type: 'metric', label: 'Bowling Economy', field: 'b_econ', highWins: false },
+                { type: 'metric', label: 'Strike Rate', field: 'b_sr', highWins: false }
+            ];
+
+            const tbody = document.getElementById('compare-body');
+            tbody.innerHTML = '';
+
+            structure.forEach(row => {
+                const tr = document.createElement('tr');
+                if (row.type === 'section') {
+                    tr.innerHTML = `<td colspan="3" class="category-row">${row.label}</td>`;
+                } else {
+                    let v1 = p1[row.field];
+                    let v2 = p2[row.field];
+                    
+                    let displayV1 = typeof v1 === 'number' ? v1.toFixed(2) : v1;
+                    let displayV2 = typeof v2 === 'number' ? v2.toFixed(2) : v2;
+                    if(row.field === 'bat_runs' || row.field === 'bat_inn' || row.field === 'wickets') {
+                        displayV1 = v1; displayV2 = v2;
+                    }
+
+                    let c1 = '', c2 = '';
+                    if (row.highWins !== null && v1 !== v2) {
+                        const p1Wins = row.highWins ? (v1 > v2) : (v1 < v2 && v1 > 0);
+                        const p2Wins = row.highWins ? (v2 > v1) : (v2 < v1 && v2 > 0);
+                        if (p1Wins) c1 = 'class="higher-stat"';
+                        if (p2Wins) c2 = 'class="higher-stat"';
+                    }
+                    tr.innerHTML = `<td ${c1}>${displayV1}</td><td style="font-weight:500; background:rgba(0,0,0,0.3); font-size:0.8rem;">${row.label}</td><td ${c2}>${displayV2}</td>`;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.onload = initApp;
     </script>
 </body>
 </html>
