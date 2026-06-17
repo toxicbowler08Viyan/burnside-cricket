@@ -676,13 +676,21 @@
             alert("Fan prediction logged inside browser memory engine.");
         }
 
-        function clearPredictions() {
-            if(confirm("Are you sure you want to completely wipe the prediction leaderboard?")) {
-                fanPredictions = [];
-                saveToLocalStorage();
-                renderLeaderboard();
-            }
+       function clearPredictions() {
+    const adminPin = prompt("🔒 Admin Verification Required:\nEnter the master PIN to wipe the prediction board:");
+    
+    // Secured with your custom admin authorization code
+    if (adminPin === "674121") {
+        if(confirm("Are you sure you want to completely wipe the prediction leaderboard?")) {
+            fanPredictions = [];
+            saveToLocalStorage();
+            renderLeaderboard();
+            alert("Board successfully cleared by Admin.");
         }
+    } else if (adminPin !== null) {
+        alert("❌ Access Denied. Incorrect PIN code.");
+    }
+}
 
         function renderLeaderboard() {
             fanPredictions.sort((a, b) => b.points - a.points);
