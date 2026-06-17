@@ -350,7 +350,10 @@
                 <button class="btn-action" onclick="submitPrediction()" style="margin-top: 5px;">Submit Prediction</button>
             </div>
 
-            <h3 style="margin-top:20px; font-size:1.1rem;">🏆 Leaderboard (Fan Points)</h3>
+            <h3 style="margin-top:20px; font-size:1.1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>🏆 Leaderboard (Fan Points)</span>
+                <button onclick="clearPredictions()" style="background: var(--danger); font-size: 0.7rem; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Wipe Board</button>
+            </h3>
             <table class="dashboard-table">
                 <thead>
                     <tr>
@@ -394,8 +397,8 @@
     <div class="grid" id="player-grid"></div>
 
     <script>
-        // System Data Arrays - Configured with aggregated Viyan values
-        const players = [
+        // System Base Datasets
+        const defaultPlayers = [
             { 
                 id: 1, 
                 name: "Samuel Bennetts", 
@@ -464,12 +467,20 @@
             }
         ];
 
-        let fanPredictions = [
+        const defaultPredictions = [
             { name: "Coach Mike", player: "Aarikjeet Dhaliwal", predictedWickets: 3, points: 25 },
             { name: "Club Fan Matt", player: "Viyan Yohith Muralidaran", predictedWickets: 2, points: 15 }
         ];
 
+        // Memory Retrieval Core Initialization
+        let players = JSON.parse(localStorage.getItem('bcc_players')) || defaultPlayers;
+        let fanPredictions = JSON.parse(localStorage.getItem('bcc_predictions')) || defaultPredictions;
         let currentlyEditingPlayerId = null;
+
+        function saveToLocalStorage() {
+            localStorage.setItem('bcc_players', JSON.stringify(players));
+            localStorage.setItem('bcc_predictions', JSON.stringify(fanPredictions));
+        }
 
         function applyDailyColorTheme() {
             const date = new Date();
@@ -659,14 +670,28 @@
 
             fanPredictions.push({ name: name, player: targetPlayer, predictedWickets: predictedWickets, points: 0 });
             document.getElementById('fan-name').value = '';
+            
+            saveToLocalStorage(); // Write to persistent storage layer
             renderLeaderboard();
-            alert("Fan prediction logged inside match core engine.");
+            alert("Fan prediction logged inside browser memory engine.");
+        }
+
+        function clearPredictions() {
+            if(confirm("Are you sure you want to completely wipe the prediction leaderboard?")) {
+                fanPredictions = [];
+                saveToLocalStorage();
+                renderLeaderboard();
+            }
         }
 
         function renderLeaderboard() {
             fanPredictions.sort((a, b) => b.points - a.points);
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
+            if (fanPredictions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:var(--text-muted); padding:15px;">No active predictions logged</td></tr>`;
+                return;
+            }
             fanPredictions.forEach((f, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td>${index + 1}</td><td><strong>${f.name}</strong></td><td>${f.player.split(' ')[0]}</td><td>${f.predictedWickets} Wkts</td><td><span style="color:var(--winner-text); font-weight:bold;">${f.points} pts</span></td>`;
@@ -695,8 +720,9 @@
                 p.rating = ((p.rating * p.ratingCount) + selectedVal) / (p.ratingCount + 1);
                 p.ratingCount++;
             });
+            saveToLocalStorage();
             renderPlayers();
-            alert("Form match cards ratings accepted!");
+            alert("Form match cards ratings updated and saved permanently!");
         }
 
         function authenticatePlayer(playerId) {
@@ -719,6 +745,7 @@
                 player.status = document.getElementById('portal-status-select').value;
                 player.notes = document.getElementById('portal-notes-input').value;
                 closePortal();
+                saveToLocalStorage();
                 renderPlayers();
                 runComparison();
                 renderAdvancedAnalytics();
