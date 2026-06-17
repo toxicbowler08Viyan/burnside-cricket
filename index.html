@@ -671,38 +671,114 @@
             fanPredictions.push({ name: name, player: targetPlayer, predictedWickets: predictedWickets, points: 0 });
             document.getElementById('fan-name').value = '';
             
-            saveToLocalStorage(); // Write to persistent storage layer
+            saveToLocalStorage();
             renderLeaderboard();
             alert("Fan prediction logged inside browser memory engine.");
         }
 
-       function clearPredictions() {
-    const adminPin = prompt("🔒 Admin Verification Required:\nEnter the master PIN to wipe the prediction board:");
-    
-    // Secured with your custom admin authorization code
-    if (adminPin === "674121") {
-        if(confirm("Are you sure you want to completely wipe the prediction leaderboard?")) {
-            fanPredictions = [];
-            saveToLocalStorage();
-            renderLeaderboard();
-            alert("Board successfully cleared by Admin.");
+        function clearPredictions() {
+            const adminPin = prompt("🔒 Admin Verification Required:\nEnter the master PIN to wipe the prediction board:");
+            
+            if (adminPin === "674121") {
+                if(confirm("Are you sure you want to completely wipe the prediction leaderboard?")) {
+                    fanPredictions = [];
+                    saveToLocalStorage();
+                    renderLeaderboard();
+                    alert("Board successfully cleared by Admin.");
+                }
+            } else if (adminPin !== null) {
+                alert("❌ Access Denied. Incorrect PIN code.");
+            }
         }
-    } else if (adminPin !== null) {
-        alert("❌ Access Denied. Incorrect PIN code.");
-    }
-}
 
         function renderLeaderboard() {
-            fanPredictions.sort((a, b) => b.points - a.points);
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
-            if (fanPredictions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="color:var(--text-muted); padding:15px;">No active predictions logged</td></tr>`;
+            
+            const sorted = [...fanPredictions].sort((a,b) => b.points - a.points);
+            if(sorted.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:var(--text-muted)">No active fan predictions logged.</td></tr>`;
                 return;
             }
-            fanPredictions.forEach((f, index) => {
+
+            sorted.forEach((pred, idx) => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${index + 1}</td><td><strong>${f.name}</strong></td><td>${f.player.split(' ')[0]}</td><td>${f.predictedWickets} Wkts</td><td><span style="color:var(--winner-text); font-weight:bold;">${f.points} pts</span></td>`;
+                tr.innerHTML = `
+                    <td><strong>#${idx + 1}</strong></td>
+                    <td>${pred.name}</td>
+                    <td>${pred.player}</td>
+                    <td>${pred.predictedWickets} Wkts</td>
+                    <td style="color:var(--winner-text); font-weight:bold;">${pred.points} pts</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateSelectors() {
+            const p1 = document.getElementById('player1-select');
+            const p2 = document.getElementById('player2-select');
+            const predSelect = document.getElementById('predict-player-select');
+            
+            p1.innerHTML = ''; p2.innerHTML = ''; predSelect.innerHTML = '';
+
+            players.forEach((p, idx) => {
+                const opt1 = document.createElement('option'); opt1.value = p.id; opt1.innerText = p.name;
+                const opt2 = document.createElement('option'); opt2.value = p.id; opt2.innerText = p.name;
+                const opt3 = document.createElement('option'); opt3.value = p.id; opt3.innerText = p.name;
+                
+                if(idx === 0) opt1.selected = true;
+                if(idx === 1 || players.length === 1) opt2.selected = true;
+
+                p1.appendChild(opt1);
+                p2.appendChild(opt2);
+                predSelect.appendChild(opt3);
+            });
+        }
+
+        function runComparison() {
+            const id1 = parseInt(document.getElementById('player1-select').value);
+            const id2 = parseInt(document.getElementById('player2-select').value);
+            
+            const player1 = players.find(p => p.id === id1);
+            const player2 = players.find(p => p.id === id2);
+
+            document.getElementById('p1-header').innerText = player1.name.split(' ')[0];
+            document.getElementById('p2-header').innerText = player2.name.split(' ')[0];
+
+            const metrics = [
+                { label: "🏏 Batting Innings", key: "bat_inn", highWins: true },
+                { label: "🔥 Total Runs", key: "bat_runs", highWins: true },
+                { label: "📊 Batting Average", key: "bat_avg", highWins: true },
+                { label: "⚡ Strike Rate", key: "bat_sr", highWins: true },
+                { label: "☝️ Total Wickets", key: "wickets", highWins: true },
+                { label: "📉 Bowling Average", key: "b_avg", highWins: false },
+                { label: "🛡️ Economy Rate", key: "b_econ", highWins: false }
+            ];
+
+            const tbody = document.getElementById('compare-body');
+            tbody.innerHTML = '';
+
+            metrics.forEach(m => {
+                const val1 = player1[m.key];
+                const val2 = player2[m.key];
+                
+                let p1Class = "";
+                let p2Class = "";
+
+                if(val1 !== val2) {
+                    if(m.highWins) {
+                        if(val1 > val2) p1Class = "higher-stat"; else p2Class = "higher-stat";
+                    } else {
+                        if(val1 < val2) p1Class = "higher-stat"; else p2Class = "higher-stat";
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="${p1Class}">${typeof val1 === 'number' ? val1.toFixed(2).replace('.00','') : val1}</td>
+                    <td style="background:#0c161f; font-weight:600; font-size:0.8rem;">${m.label}</td>
+                    <td class="${p2Class}">${typeof val2 === 'number' ? val2.toFixed(2).replace('.00','') : val2}</td>
+                `;
                 tbody.appendChild(tr);
             });
         }
@@ -714,9 +790,15 @@
                 const row = document.createElement('div');
                 row.className = 'rating-row';
                 row.innerHTML = `
-                    <span style="font-size:0.85rem;">${p.name.split(' ')[0]} ${p.name.split(' ')[1] || ''}</span>
-                    <input type="range" id="rate-p-${p.id}" min="1" max="10" step="0.5" value="7.5" oninput="document.getElementById('lbl-p-${p.id}').innerText = this.value">
-                    <span id="lbl-p-${p.id}" style="font-weight:bold; width:25px; text-align:right; color:var(--gold);">7.5</span>
+                    <span><strong>${p.name}</strong></span>
+                    <select id="rating-val-${p.id}">
+                        <option value="10">⭐ 10 (Incredible)</option>
+                        <option value="9" selected>⭐ 9 (Excellent)</option>
+                        <option value="8">⭐ 8 (Great)</option>
+                        <option value="7">⭐ 7 (Good)</option>
+                        <option value="6">⭐ 6 (Average)</option>
+                        <option value="5">⭐ 5 (Poor)</option>
+                    </select>
                 `;
                 container.appendChild(row);
             });
@@ -724,107 +806,45 @@
 
         function submitRatings() {
             players.forEach(p => {
-                const selectedVal = parseFloat(document.getElementById(`rate-p-${p.id}`).value);
-                p.rating = ((p.rating * p.ratingCount) + selectedVal) / (p.ratingCount + 1);
-                p.ratingCount++;
+                const selectEl = document.getElementById(`rating-val-${p.id}`);
+                if(selectEl) {
+                    const newRating = parseInt(selectEl.value);
+                    const totalScore = (p.rating * p.ratingCount) + newRating;
+                    p.ratingCount += 1;
+                    p.rating = totalScore / p.ratingCount;
+                }
             });
             saveToLocalStorage();
             renderPlayers();
-            alert("Form match cards ratings updated and saved permanently!");
+            runComparison();
+            alert("Team community ratings processed successfully.");
         }
 
-        function authenticatePlayer(playerId) {
-            const player = players.find(p => p.id === playerId);
-            const userPin = prompt(`Verification Entry Required:\nEnter private credentials for ${player.name}:`);
-            if (userPin === "1234" || userPin === "234688" || userPin === "142124") {
-                currentlyEditingPlayerId = playerId;
-                document.getElementById('portal-active-player-name').innerText = player.name;
-                document.getElementById('portal-status-select').value = player.status;
-                document.getElementById('portal-notes-input').value = player.notes;
-                document.getElementById('player-status-portal').style.display = 'block';
-            } else if (userPin !== null) {
-                alert("❌ Authentication failure.");
-            }
+        function authenticatePlayer(id) {
+            currentlyEditingPlayerId = id;
+            const target = players.find(p => p.id === id);
+            document.getElementById('portal-active-player-name').innerText = target.name;
+            document.getElementById('portal-status-select').value = target.status;
+            document.getElementById('portal-notes-input').value = target.notes || "";
+            document.getElementById('player-status-portal').style.display = 'block';
+            document.getElementById('player-status-portal').scrollIntoView({ behavior: 'smooth' });
         }
 
         function savePlayerStatus() {
-            if (currentlyEditingPlayerId !== null) {
-                const player = players.find(p => p.id === currentlyEditingPlayerId);
-                player.status = document.getElementById('portal-status-select').value;
-                player.notes = document.getElementById('portal-notes-input').value;
-                closePortal();
-                saveToLocalStorage();
-                renderPlayers();
-                runComparison();
-                renderAdvancedAnalytics();
-            }
-        }
-
-        function closePortal() { document.getElementById('player-status-portal').style.display = 'none'; currentlyEditingPlayerId = null; }
-
-        function populateSelectors() {
-            const p1 = document.getElementById('player1-select');
-            const p2 = document.getElementById('player2-select');
-            const predictSel = document.getElementById('predict-player-select');
-            p1.innerHTML = ''; p2.innerHTML = ''; predictSel.innerHTML = '';
+            if(!currentlyEditingPlayerId) return;
+            const target = players.find(p => p.id === currentlyEditingPlayerId);
+            target.status = document.getElementById('portal-status-select').value;
+            target.notes = document.getElementById('portal-notes-input').value.trim();
             
-            players.forEach((p, idx) => {
-                p1.add(new Option(p.name, p.id, p.id===2, p.id===2)); 
-                p2.add(new Option(p.name, p.id, p.id===4, p.id===4)); 
-                predictSel.add(new Option(p.name, p.id));
-            });
+            saveToLocalStorage();
+            renderPlayers();
+            closePortal();
+            alert("Player state adjusted inside active system database.");
         }
 
-        function runComparison() {
-            const id1 = parseInt(document.getElementById('player1-select').value);
-            const id2 = parseInt(document.getElementById('player2-select').value);
-            const p1 = players.find(p => p.id === id1);
-            const p2 = players.find(p => p.id === id2);
-
-            document.getElementById('p1-header').innerText = p1.name.split(' ')[0]; 
-            document.getElementById('p2-header').innerText = p2.name.split(' ')[0];
-
-            const structure = [
-                { type: 'metric', label: 'Availability', field: 'status', highWins: null },
-                { type: 'section', label: 'Batting Data Metrics' },
-                { type: 'metric', label: 'Runs Scored', field: 'bat_runs', highWins: true },
-                { type: 'metric', label: 'Innings Played', field: 'bat_inn', highWins: true },
-                { type: 'metric', label: 'Batting Average', field: 'bat_avg', highWins: true },
-                { type: 'section', label: 'Bowling Data Metrics' },
-                { type: 'metric', label: 'Total Wickets', field: 'wickets', highWins: true },
-                { type: 'metric', label: 'Bowling Average', field: 'b_avg', highWins: false },
-                { type: 'metric', label: 'Bowling Economy', field: 'b_econ', highWins: false },
-                { type: 'metric', label: 'Strike Rate', field: 'b_sr', highWins: false }
-            ];
-
-            const tbody = document.getElementById('compare-body');
-            tbody.innerHTML = '';
-
-            structure.forEach(row => {
-                const tr = document.createElement('tr');
-                if (row.type === 'section') {
-                    tr.innerHTML = `<td colspan="3" class="category-row">${row.label}</td>`;
-                } else {
-                    let v1 = p1[row.field];
-                    let v2 = p2[row.field];
-                    
-                    let displayV1 = typeof v1 === 'number' ? v1.toFixed(2) : v1;
-                    let displayV2 = typeof v2 === 'number' ? v2.toFixed(2) : v2;
-                    if(row.field === 'bat_runs' || row.field === 'bat_inn' || row.field === 'wickets') {
-                        displayV1 = v1; displayV2 = v2;
-                    }
-
-                    let c1 = '', c2 = '';
-                    if (row.highWins !== null && v1 !== v2) {
-                        const p1Wins = row.highWins ? (v1 > v2) : (v1 < v2 && v1 > 0);
-                        const p2Wins = row.highWins ? (v2 > v1) : (v2 < v1 && v2 > 0);
-                        if (p1Wins) c1 = 'class="higher-stat"';
-                        if (p2Wins) c2 = 'class="higher-stat"';
-                    }
-                    tr.innerHTML = `<td ${c1}>${displayV1}</td><td style="font-weight:500; background:rgba(0,0,0,0.3); font-size:0.8rem;">${row.label}</td><td ${c2}>${displayV2}</td>`;
-                }
-                tbody.appendChild(tr);
-            });
+        function closePortal() {
+            document.getElementById('player-status-portal').style.display = 'none';
+            currentlyEditingPlayerId = null;
         }
 
         window.onload = initApp;
